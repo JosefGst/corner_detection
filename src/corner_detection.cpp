@@ -1,20 +1,14 @@
 #include "ros/ros.h"
-#include "std_msgs/String.h"
-#include "laser_line_extraction/LineSegmentList.h"
+#include "corner_detection.h"
 
-
-void chatterCallback(const laser_line_extraction::LineSegmentList::ConstPtr& msg)
+CornerDetection::CornerDetection() : nh_("~")
 {
-  ROS_INFO("I heard: [%s]", msg->header.frame_id.c_str());
-  ROS_INFO("I heard: [%f]", msg->line_segments[0].radius);
-
+  sub_line_segment = nh_.subscribe("/line_segments", 1000, &CornerDetection::chatterCallback, this);
 }
 
-int main(int argc, char **argv)
+void CornerDetection::chatterCallback(const laser_line_extraction::LineSegmentList::ConstPtr& msg)
 {
-  ros::init(argc, argv, "corner_detection");
-  ros::NodeHandle n;
-  ros::Subscriber sub = n.subscribe("line_segments", 1000, chatterCallback);
-  ros::spin();
-  return 0;
+  ROS_INFO("Frame ID: [%s]", msg->header.frame_id.c_str());
+  ROS_INFO("I heard: [%f]", msg->line_segments[2].radius);
+
 }
