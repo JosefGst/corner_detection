@@ -8,7 +8,7 @@ CornerDetection::CornerDetection() : nh_("~")
 
 void CornerDetection::corner_detection_cb(const laser_line_extraction::LineSegmentList::ConstPtr &msg)
 {
-  ROS_INFO("Frame ID: [%s]", msg->header.frame_id.c_str());
+  ROS_INFO("____Frame ID: [%s]", msg->header.frame_id.c_str());
   float ix = -1.0, iy = -1.0;
   int corner_id = 0;
 
@@ -16,23 +16,23 @@ void CornerDetection::corner_detection_cb(const laser_line_extraction::LineSegme
   {
     for (int line_segment_n = line_segment + 1; line_segment_n < msg->line_segments.size(); line_segment_n++)
     {
-      ROS_INFO("Start1: [%f, %f]", msg->line_segments[line_segment].start[0], msg->line_segments[line_segment].start[1]);
-      ROS_INFO("End1: [%f, %f]", msg->line_segments[line_segment].end[0], msg->line_segments[line_segment].end[1]);
+      // ROS_INFO("Start1: [%f, %f]", msg->line_segments[line_segment].start[0], msg->line_segments[line_segment].start[1]);
+      // ROS_INFO("End1: [%f, %f]", msg->line_segments[line_segment].end[0], msg->line_segments[line_segment].end[1]);
 
-      ROS_INFO("Start2: [%f, %f]", msg->line_segments[line_segment_n].start[0], msg->line_segments[line_segment_n].start[1]);
-      ROS_INFO("End2: [%f, %f]", msg->line_segments[line_segment_n].end[0], msg->line_segments[line_segment_n].end[1]);
+      // ROS_INFO("Start2: [%f, %f]", msg->line_segments[line_segment_n].start[0], msg->line_segments[line_segment_n].start[1]);
+      // ROS_INFO("End2: [%f, %f]", msg->line_segments[line_segment_n].end[0], msg->line_segments[line_segment_n].end[1]);
 
-      // float x1 = msg->line_segments[line_segment].start[0];
-      // float y1 = msg->line_segments[line_segment].start[1];
+      float x1 = msg->line_segments[line_segment].start[0];
+      float y1 = msg->line_segments[line_segment].start[1];
 
-      // float x2 = msg->line_segments[line_segment].end[0];
-      // float y2 = msg->line_segments[line_segment].end[1];
+      float x2 = msg->line_segments[line_segment].end[0];
+      float y2 = msg->line_segments[line_segment].end[1];
 
-      // float x3 = msg->line_segments[line_segment_n].start[0];
-      // float y3 = msg->line_segments[line_segment_n].start[1];
+      float x3 = msg->line_segments[line_segment_n].start[0];
+      float y3 = msg->line_segments[line_segment_n].start[1];
 
-      // float x4 = msg->line_segments[line_segment_n].end[0];
-      // float y4 = msg->line_segments[line_segment_n].end[1];
+      float x4 = msg->line_segments[line_segment_n].end[0];
+      float y4 = msg->line_segments[line_segment_n].end[1];
 
       bool result = LineLineIntersect(x1, y1, x2, y2, x3, y3, x4, y4, ix, iy);
       ROS_INFO("Intersection: [%f, %f]", ix, iy);
