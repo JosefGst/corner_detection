@@ -37,8 +37,15 @@ void CornerDetection::corner_detection_cb(const laser_line_extraction::LineSegme
       bool result = LineLineIntersect(x1, y1, x2, y2, x3, y3, x4, y4, ix, iy);
       ROS_INFO("Intersection: [%f, %f]", ix, iy);
 
-      publish_corner_tf(ix, iy, corner_id);
-      corner_id++;
+      float distance_to_corner_square1 = pow(ix-x2,2) + pow(iy-y2,2);
+      float distance_to_corner_square2 = pow(ix-x3,2) + pow(iy-y3,2);
+      ROS_INFO("distance to corner: [%f, %f]", distance_to_corner_square1, distance_to_corner_square2);
+
+      if (distance_to_corner_square1 < pow(max_conrner_distance_to_line,2) && distance_to_corner_square2 < pow(max_conrner_distance_to_line,2))
+      {
+        publish_corner_tf(ix, iy, corner_id);
+        corner_id++;
+      }
     }
   }
 }
