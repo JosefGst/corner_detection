@@ -9,13 +9,91 @@ CornerDetection::CornerDetection() : nh_("~")
 void CornerDetection::corner_detection_cb(const laser_line_extraction::LineSegmentList::ConstPtr &msg)
 {
   ROS_INFO("Frame ID: [%s]", msg->header.frame_id.c_str());
+  float ix = -1.0, iy = -1.0;
 
-  for (int line_segment = 0; line_segment < msg->line_segments.size(); line_segment++){
-    float start1[line_segment][2], end1[line_segment][2];
-    for (int coordinate = 0; coordinate<2; coordinate++){
-      ROS_INFO("I heard: [%f]", msg->line_segments[line_segment].start[coordinate]);
-      // start1[coordinate] = msg->line_segments[line_segment].start[coordinate];
-    }
-    // ROS_INFO("Start1: [%f, %f]", start1[0], start1[1]);
+  for (int line_segment = 0; line_segment < msg->line_segments.size() - 1; line_segment++)
+  {
+
+    ROS_INFO("Start1: [%f, %f]", msg->line_segments[line_segment].start[0], msg->line_segments[line_segment].start[1]);
+    ROS_INFO("End1: [%f, %f]", msg->line_segments[line_segment].end[0], msg->line_segments[line_segment].end[1]);
+
+    ROS_INFO("Start2: [%f, %f]", msg->line_segments[line_segment + 1].start[0], msg->line_segments[line_segment + 1].start[1]);
+    ROS_INFO("End2: [%f, %f]", msg->line_segments[line_segment + 1].end[0], msg->line_segments[line_segment + 1].end[1]);
+
+    float x1 = msg->line_segments[line_segment].start[0];
+    float y1 = msg->line_segments[line_segment].start[1];
+
+    float x2 = msg->line_segments[line_segment].end[0];
+    float y2 = msg->line_segments[line_segment].end[1];
+
+    float x3 = msg->line_segments[line_segment + 1].start[0];
+    float y3 = msg->line_segments[line_segment + 1].start[1];
+
+    float x4 = msg->line_segments[line_segment + 1].end[0];
+    float y4 = msg->line_segments[line_segment + 1].end[1];
+
+    bool result = LineLineIntersect(x1, y1, x2, y2, x3, y3, x4, y4, ix, iy);
+    ROS_INFO("Intersection: [%f, %f]", ix, iy);
+
+    publish_corner_tf(ix, iy, line_segment);
   }
+}
+
+void CornerDetection::publish_corner_tf(float x,float y, int index)
+{
+  transformStamped.header.stamp = ros::Time::now();
+  transformStamped.header.frame_id = "base_link";
+  transformStamped.child_frame_id = "corner";
+  transformStamped.child_frame_id += std::to_string(index);
+  transformStamped.transform.translation.x = x;
+  transformStamped.transform.translation.y = y;
+  transformStamped.transform.translation.z = 0.0;
+  tf2::Quaternion q;
+  q.setRPY(0, 0, 0);
+  transformStamped.transform.rotation.x = q.x();
+  transformStamped.transform.rotation.y = q.y();
+  transformStamped.transform.rotation.z = q.z();
+  transformStamped.transform.rotation.w = q.w();
+
+  corner_broadcaster.sendTransform(transformStamped);
+}
+
+float CornerDetection::Det(float a, float b, float c, float d)
+{
+  return a * d - b * c;
+}
+
+/// Calculate intersection of two lines.
+///\return true if found, false if not found or error
+bool CornerDetection::LineLineIntersect(float x1, float y1,         // Line 1 start
+                                        float x2, float y2,         // Line 1 end
+                                        float x3, float y3,         // Line 2 start
+                                        float x4, float y4,         // Line 2 end
+                                        float &ixOut, float &iyOut) // Output
+{
+  // http://mathworld.wolfram.com/Line-LineIntersection.html
+
+  float detL1 = Det(x1, y1, x2, y2);
+  float detL2 = Det(x3, y3, x4, y4);
+  float x1mx2 = x1 - x2;
+  float x3mx4 = x3 - x4;
+  float y1my2 = y1 - y2;
+  float y3my4 = y3 - y4;
+
+  float xnom = Det(detL1, x1mx2, detL2, x3mx4);
+  float ynom = Det(detL1, y1my2, detL2, y3my4);
+  float denom = Det(x1mx2, y1my2, x3mx4, y3my4);
+  if (denom == 0.0) // Lines don't seem to cross
+  {
+    ixOut = NAN;
+    iyOut = NAN;
+    return false;
+  }
+
+  ixOut = xnom / denom;
+  iyOut = ynom / denom;
+  if (!isfinite(ixOut) || !isfinite(iyOut)) // Probably a numerical issue
+    return false;
+
+  return true; // All OK
 }
