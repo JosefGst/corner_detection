@@ -8,7 +8,7 @@ CornerDetection::CornerDetection() : nh_("~")
 
 void CornerDetection::corner_detection_cb(const laser_line_extraction::LineSegmentList::ConstPtr &msg)
 {
-  ROS_INFO("____Frame ID: [%s]", msg->header.frame_id.c_str());
+  // ROS_INFO("____Frame ID: [%s]", msg->header.frame_id.c_str());
   float ix = -1.0, iy = -1.0;
   int corner_id = 0;
 
@@ -35,13 +35,14 @@ void CornerDetection::corner_detection_cb(const laser_line_extraction::LineSegme
       float y4 = msg->line_segments[line_segment_n].end[1];
 
       bool result = LineLineIntersect(x1, y1, x2, y2, x3, y3, x4, y4, ix, iy);
-      ROS_INFO("Intersection: [%f, %f]", ix, iy);
+      // ROS_INFO("Intersection: [%f, %f]", ix, iy);
+      
 
-      float distance_to_corner_square1 = pow(ix-x2,2) + pow(iy-y2,2);
-      float distance_to_corner_square2 = pow(ix-x3,2) + pow(iy-y3,2);
-      ROS_INFO("distance to corner: [%f, %f]", distance_to_corner_square1, distance_to_corner_square2);
+      float min_distance_line1_to_corner = std::min(distance_square(ix, iy, x1, y1), distance_square(ix, iy, x2, y2));
+      float min_distance_line2_to_corner = std::min(distance_square(ix, iy, x3, y3), distance_square(ix, iy, x4, y4));
+      // ROS_INFO("distance to corner: [%f, %f, %f]", distance_square(ix, iy, x1, y1), distance_square(ix, iy, x2, y2), min_distance_line1_to_corner);
 
-      if (distance_to_corner_square1 < pow(max_conrner_distance_to_line,2) && distance_to_corner_square2 < pow(max_conrner_distance_to_line,2))
+      if (min_distance_line1_to_corner < pow(max_conrner_distance_to_line,2) || min_distance_line2_to_corner < pow(max_conrner_distance_to_line,2))
       {
         publish_corner_tf(ix, iy, corner_id);
         corner_id++;
@@ -107,4 +108,8 @@ bool CornerDetection::LineLineIntersect(float x1, float y1,         // Line 1 st
     return false;
 
   return true; // All OK
+}
+
+float CornerDetection::distance_square(float x1, float y1, float x2, float y2){
+  return pow(x1-x2,2)+pow(y1-y2,2);
 }
