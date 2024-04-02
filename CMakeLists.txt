@@ -8,6 +8,11 @@ find_package(catkin REQUIRED COMPONENTS
   tf2
   tf2_ros
   geometry_msgs
+  dynamic_reconfigure
+)
+
+generate_dynamic_reconfigure_options(
+  config/reconf.cfg
 )
 
 catkin_package(
@@ -36,3 +41,5 @@ catkin_install_python(PROGRAMS
   scripts/corner_detection.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
+add_dependencies(corner_detection_node ${PROJECT_NAME}_gencfg)

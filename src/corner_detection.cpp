@@ -1,5 +1,6 @@
 #include "ros/ros.h"
 #include "corner_detection.h"
+#include "reconfigure.h"
 
 CornerDetection::CornerDetection() : nh_("~")
 {
@@ -42,7 +43,7 @@ void CornerDetection::corner_detection_cb(const laser_line_extraction::LineSegme
       float min_distance_line2_to_corner = std::min(distance_square(ix, iy, x3, y3), distance_square(ix, iy, x4, y4));
       // ROS_INFO("distance to corner: [%f, %f, %f]", distance_square(ix, iy, x1, y1), distance_square(ix, iy, x2, y2), min_distance_line1_to_corner);
 
-      if (min_distance_line1_to_corner < pow(max_conrner_distance_to_line,2) || min_distance_line2_to_corner < pow(max_conrner_distance_to_line,2))
+      if (min_distance_line1_to_corner < pow(global_config.max_corner_distance_to_line,2) || min_distance_line2_to_corner < pow(global_config.max_corner_distance_to_line,2))
       {
         publish_corner_tf(ix, iy, corner_id);
         corner_id++;

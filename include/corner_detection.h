@@ -11,7 +11,7 @@ class CornerDetection
 {
 public:
     CornerDetection();
-    float max_conrner_distance_to_line = 1.0;
+    double max_corner_distance_to_line = 1.0;
 
 private:
     ros::NodeHandle nh_;
