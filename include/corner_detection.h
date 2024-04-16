@@ -47,6 +47,8 @@ private:
                            float &ixOut, float &iyOut); // Output
 
     float distance_square(float x1, float y1, float x2, float y2);
+
+    float line_length(float x1, float y1, float x2, float y2);
 };
 
 #endif // CORNER_DETECTION_H

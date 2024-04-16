@@ -12,9 +12,10 @@ void CornerDetection::corner_detection_cb(const laser_line_extraction::LineSegme
   ROS_INFO("____Frame ID: [%s]", msg->header.frame_id.c_str());
   float ix = -1.0, iy = -1.0;
   int corner_id = 0;
-
-  for (int line_segment = 0; line_segment < (msg->line_segments.size() - 1); line_segment++)
+  if (msg->line_segments.size() > 1)
   {
+    for (int line_segment = 0; line_segment < (msg->line_segments.size() - 1); line_segment++)
+    {
       // ROS_INFO("Start1: [%f, %f]", msg->line_segments[line_segment].start[0], msg->line_segments[line_segment].start[1]);
       // ROS_INFO("End1: [%f, %f]", msg->line_segments[line_segment].end[0], msg->line_segments[line_segment].end[1]);
 
@@ -35,17 +36,18 @@ void CornerDetection::corner_detection_cb(const laser_line_extraction::LineSegme
 
       bool result = LineLineIntersect(x1, y1, x2, y2, x3, y3, x4, y4, ix, iy);
       // ROS_INFO("Intersection: [%f, %f]", ix, iy);
-      
 
       float min_distance_line1_to_corner = std::min(distance_square(ix, iy, x1, y1), distance_square(ix, iy, x2, y2));
       float min_distance_line2_to_corner = std::min(distance_square(ix, iy, x3, y3), distance_square(ix, iy, x4, y4));
       ROS_INFO("distance to corner: [%f, %f, %f]", distance_square(ix, iy, x1, y1), distance_square(ix, iy, x2, y2), min_distance_line1_to_corner);
 
-      if (min_distance_line1_to_corner < pow(global_config.max_corner_distance_to_line,2) || min_distance_line2_to_corner < pow(global_config.max_corner_distance_to_line,2))
+      // Check if the intersection is below the max_corner_distance_to_line
+      if (min_distance_line1_to_corner < pow(global_config.max_corner_distance_to_line, 2) || min_distance_line2_to_corner < pow(global_config.max_corner_distance_to_line, 2))
       {
         publish_corner_tf(ix, iy, corner_id);
         corner_id++;
       }
+    }
   }
 }
 
@@ -108,6 +110,12 @@ bool CornerDetection::LineLineIntersect(float x1, float y1,         // Line 1 st
   return true; // All OK
 }
 
-float CornerDetection::distance_square(float x1, float y1, float x2, float y2){
-  return pow(x1-x2,2)+pow(y1-y2,2);
+float CornerDetection::distance_square(float x1, float y1, float x2, float y2)
+{
+  return pow(x1 - x2, 2) + pow(y1 - y2, 2);
+}
+
+float CornerDetection::line_length(float x1, float y1, float x2, float y2)
+{
+  return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
 }
