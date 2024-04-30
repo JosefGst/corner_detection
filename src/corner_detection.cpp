@@ -54,7 +54,7 @@ void CornerDetection::corner_detection_cb(const laser_line_extraction::LineSegme
 void CornerDetection::publish_corner_tf(float x, float y, int index)
 {
   transformStamped.header.stamp = ros::Time::now();
-  transformStamped.header.frame_id = "base_link";
+  transformStamped.header.frame_id = global_config.frame_id;
   transformStamped.child_frame_id = "corner";
   transformStamped.child_frame_id += std::to_string(index);
   transformStamped.transform.translation.x = x;
